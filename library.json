@@ -1,0 +1,21 @@
+{
+  "name": "Supabase-ESP32",
+  "keywords": "supabase, postgresql, rest, database, IoT",
+  "version": "0.0.1",
+  "description": "A Arduino Platform Library for connecting ESP32 to Supabase, including user authentication",
+  "authors": {
+    "name": "Jhagas Hana Winaya",
+    "email": "jhagas@e.email"
+  },
+  "license": "MIT",
+  "frameworks": "arduino",
+  "platforms": "espressif32",
+  "examples": "examples/*/*.ino",
+  "dependencies": {
+    "bblanchon/ArduinoJson": "^6.21.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhagas/Supabase-ESP32.git"
+  }
+}

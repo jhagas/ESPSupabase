@@ -1,0 +1,31 @@
+#######################################
+# Supabase ESP32
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Supabase	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+insert          KEYWORD2
+select         	KEYWORD2
+delete      	KEYWORD2
+update      	KEYWORD2
+get_payload     KEYWORD2
+
+login_email	    KEYWORD2
+login_email     KEYWORD2
+login_process   KEYWORD2
+
+add_filter  	KEYWORD2
+clear_filter	KEYWORD2
+sort        	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
