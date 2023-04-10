@@ -8,13 +8,7 @@ class Supabase
 public:
   String url;
   String key;
-  bool useAuth;
   String USER_TOKEN;
-  unsigned long loginTime;
-  String loginMethod;
-  String phone_or_email;
-  String password;
-  String payload;
 
   void begin(String url_a, String key_a);
 
@@ -25,4 +19,12 @@ public:
   int insert(String table, String json, bool upsert);
   int select(String table, String column, int limit = 1);
   String getPayload();
+
+private:
+  bool useAuth;
+  unsigned long loginTime;
+  String phone_or_email;
+  String password;
+  String payload;
+  String loginMethod;
 };
