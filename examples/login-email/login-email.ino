@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Supabase.h>
+#include <ESP32_Supabase.h>
 #include <WiFi.h>
 
 Supabase db;

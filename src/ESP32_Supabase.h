@@ -12,12 +12,14 @@ public:
 
   void begin(String url_a, String key_a);
 
-  int login_process();
   int login_email(String email_a, String password_a);
   int login_phone(String phone_a, String password_a);
 
   int insert(String table, String json, bool upsert);
   int select(String table, String column, int limit = 1);
+  void add_filter(String column, String condition, String value);
+  void clear_filter();
+  void sort();
   String getPayload();
 
 private:
@@ -27,4 +29,7 @@ private:
   String password;
   String payload;
   String loginMethod;
+  String filter;
+
+  int login_process();
 };

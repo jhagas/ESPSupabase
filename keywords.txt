@@ -19,8 +19,7 @@ update      	KEYWORD2
 get_payload     KEYWORD2
 
 login_email	    KEYWORD2
-login_email     KEYWORD2
-login_process   KEYWORD2
+login_phone     KEYWORD2
 
 add_filter  	KEYWORD2
 clear_filter	KEYWORD2

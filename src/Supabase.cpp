@@ -1,4 +1,4 @@
-#include "Supabase.h"
+#include "ESP32_Supabase.h"
 
 WiFiClientSecure client;
 HTTPClient https;
@@ -10,6 +10,16 @@ void Supabase::begin(String url_a, String key_a)
   key = key_a;
 }
 
+void Supabase::add_filter(String column, String condition, String value)
+{
+
+}
+
+void Supabase::clear_filter()
+{
+  filter = "";
+}
+
 int Supabase::insert(String table, String json, bool upsert)
 {
   int httpCode;
@@ -17,7 +27,8 @@ int Supabase::insert(String table, String json, bool upsert)
   {
     https.addHeader("apikey", key);
     https.addHeader("Content-Type", "application/json");
-    if (upsert) {
+    if (upsert)
+    {
       https.addHeader("Authorization", "resolution=merge-duplicates");
     }
     if (useAuth)
@@ -41,7 +52,7 @@ int Supabase::insert(String table, String json, bool upsert)
 
 int Supabase::select(String table, String column, int limit)
 {
-  column.replace("," , "%2C");
+  column.replace(",", "%2C");
   String url_select = url + "/rest/v1/" + table + "?select=" + column + "&limit=" + limit;
   https.begin(client, url_select);
   https.addHeader("apikey", key);
@@ -50,7 +61,7 @@ int Supabase::select(String table, String column, int limit)
   if (useAuth)
   {
     unsigned long t_now = millis();
-    if (t_now - loginTime >= 60*60*1000)
+    if (t_now - loginTime >= 60 * 60 * 1000)
     {
       login_process();
     }
@@ -72,7 +83,8 @@ int Supabase::select(String table, String column, int limit)
   return httpCode;
 }
 
-String Supabase::getPayload() {
+String Supabase::getPayload()
+{
   return payload;
 }
 
