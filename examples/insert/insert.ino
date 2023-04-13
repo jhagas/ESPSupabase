@@ -17,7 +17,7 @@ void setup() {
   Serial.begin(9600);
 
   Serial.print("Connecting to WiFi");
-  WiFi.begin("Jhagas H.", "tibetanplateau");
+  WiFi.begin("ssid", "password");
   while (WiFi.status() != WL_CONNECTED) {
     delay(100);
     Serial.print(".");

@@ -10,67 +10,111 @@ For further information :
 - [Supabase Documentation](https://supabase.com/docs)
 - [PostgREST API Documentation](https://postgrest.org/en/stable/api.html)
 
+## Table of Contents
+
+- [ESP32 Supabase](#esp32-supabase)
+  - [Table of Contents](#table-of-contents)
+  - [Using This Library](#using-this-library)
+  - [Examples](#examples)
+  - [Available Method](#available-method)
+    - [Directly Makes Connection to Database](#directly-makes-connection-to-database)
+    - [Building The Queries](#building-the-queries)
+      - [Horizontal Filtering (comparison) Operator](#horizontal-filtering-comparison-operator)
+      - [Ordering, Limiting or Offseting the Result](#ordering-limiting-or-offseting-the-result)
+      - [Getting the Query URL (for debugging)](#getting-the-query-url-for-debugging)
+      - [Reset the Query URL](#reset-the-query-url)
+  - [To-do (sorted by priority)](#to-do-sorted-by-priority)
+
+## Using This Library
+
+This library is available at Arduino's Library Manager, as well as PlatformIO Library Manager
+- [Arduino Library Manager Guide](http://arduino.cc/en/guide/libraries)
+
 ## Examples
 
 See all examples in `examples` folder
 
 ## Available Method
 
-| Method                                                | Description                                                                 |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| `begin(String url_a, String key_a);`                  | `url_a`  is a Supabase URL and `key_a` is supabase anon key. Returns `void` |
-| `login_email(String email_a, String password_a)`      | Returns http response code `int`                                            |
-| `login_phone(String phone_a, String password_a)`      | Returns http response code `int`                                            |
-| `insert(String table, String json, bool upsert)`      | Returns http response code `int`                                            |
-| `get_payload(String table, String json, bool upsert)` | Returns payload from select and rpc method `String`                         |
+### Directly Makes Connection to Database
 
-### Horizontal Filtering Operators
+| Method                                           | Description                                                                                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `begin(String url_a, String key_a);`             | `url_a`  is a Supabase URL and `key_a` is supabase anon key. Returns `void`                                                          |
+| `login_email(String email_a, String password_a)` | Returns http response code `int`                                                                                                     |
+| `login_phone(String phone_a, String password_a)` | Returns http response code `int`                                                                                                     |
+| `insert(String table, String json, bool upsert)` | Returns http response code `int`. If you want to do upsert, set thirt parameter to `true`                                            |
+| `.doSelect()`                                    | Called at the end of select query chain, see [Examples](#examples). Returns http response payload (your data) from Supabase `String` |
+| `.doUpdate(String json)`                         | Called at the end of update query chain, see [Examples](#examples). Returns http response code from Supabase `int`                   |
 
-| Abbreviation | Meaning                                                                                                                                                                   |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| eq           | equals                                                                                                                                                                    |
-| gt           | greater than                                                                                                                                                              |
-| gte          | greater than or equal                                                                                                                                                     |
-| lt           | less than                                                                                                                                                                 |
-| lte          | less than or equal                                                                                                                                                        |
-| neq          | not equal                                                                                                                                                                 |
-| in           | one of a list of values, e.g. `?a=in.(1,2,3)` – also supports commas in quoted strings like `?a=in.("hi,there","yes,you")`                                                |
-| is           | checking for exact equality (null,true,false,unknown)                                                                                                                     |
-| cs           | contains e.g. `?tags=cs.{example, new}`                                                                                                                                   |
-| cd           | contained in e.g. `?values=cd.{1,2,3}`                                                                                                                                    |
-| ov           | overlap (have points in common), e.g. `?period=ov.[2017-01-01,2017-06-30]` – also supports array types, use curly braces instead of square brackets e.g.  `?arr=ov.{1,3}` |
-| sl           | strictly left of, e.g. `?range=sl.(1,10)`                                                                                                                                 |
-| sr           | strictly right of                                                                                                                                                         |
-| nxr          | does not extend to the right of, e.g. `?range=nxr.(1,10)`                                                                                                                 |
-| nxl          | does not extend to the left of                                                                                                                                            |
-| adj          | is adjacent to, e.g. `?range=adj.(1,10)`                                                                                                                                  |
-| not          | negates another operator, see [Logical operators](#logical-operators)                                                             |
-| or           | logical OR, see [Logical operators](#logical-operators)                                                                           |
-| and          | logical AND, see [Logical operators](#logical-operators)                                                                          |
+### Building The Queries
 
-#### Logical operators
+When building the queries, you can chaining the method like this example.
 
-Multiple conditions on columns are evaluated using AND by default, but you can combine them using OR with the or operator. For example, to return people under 18 or over 21:
+> Remember in `.select()` method, it is mandatory to put some low amount of `.limit()`, so you can avoid your microcontroller's memory get overflowed
 
-```curl
-curl "http://localhost:3000/people?or=(age.lt.18,age.gt.21)"
+```arduino
+String read = db.from("table").select("*").eq("column", "value").order("column", "asc", true).limit(1).doSelect();
 ```
 
-To negate any operator, you can prefix it with not like `?a=not.eq.2` or `?not.and=(a.gte.0,a.lte.100)`.
+| Methods                  | Description                                                                             |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| `.from(String table);`   | Specify which table you want to query. It will append `?table_name` in Request URL      |
+| `.select(String colls);` | Specify that you want to do select query. It will append `&select=colls` in Request URL |
+| `.update(String table);` | Specify that you want to do update query. It will append `&update` in Request URL       |
 
-You can also apply complex logic to the conditions:
 
-```curl
-curl "http://localhost:3000/people?grade=gte.90&student=is.true&or=(age.eq.14,not.and(age.gte.11,age.lte.17))"
+#### Horizontal Filtering (comparison) Operator
+
+| Methods                            | Description                                                                                                |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `.eq(String colls, String value)`  | Equals                                                                                                     |
+| `.gt(String colls, String value)`  | Greater than                                                                                               |
+| `.gte(String colls, String value)` | Greater than or equal                                                                                      |
+| `.lt(String colls, String value)`  | Less than                                                                                                  |
+| `.lte(String colls, String value)` | Less than or equal                                                                                         |
+| `.neq(String colls, String value)` | Not equal                                                                                                  |
+| `.in(String colls, String value)`  | One of a list of values, e.g. `1,2,3` – also supports commas in quoted strings like `"hi,there","yes,you"` |
+| `.is(String colls, String value)`  | Checking for exact equality `<null, true, false, unknown>`                                                 |
+| `.cs(String colls, String value)`  | Contains e.g. `example, new`                                                                               |
+| `.cd(String colls, String value)`  | Contained in e.g. `1, 2, 3`                                                                                |
+| `.ov(String colls, String value)`  | Overlap (have points in common), e.g. `2017-01-01, 2017-06-30`                                             |
+| `.sl(String colls, String value)`  | Strictly left of, e.g. `1,10`                                                                              |
+| `.sr(String colls, String value)`  | Strictly right of                                                                                          |
+| `.nxr(String colls, String value)` | Does not extend to the right of, e.g. `1,10`                                                               |
+| `.nxl(String colls, String value)` | Does not extend to the left of                                                                             |
+| `.adj(String colls, String value)` | Is adjacent to, e.g. `1,10`                                                                                |
+
+#### Ordering, Limiting or Offseting the Result
+
+| Methods                                       | Description                                                                                                                                                                                 |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.order(String coll, String by, bool nulls);` | This reorders the response rows. `coll` parameter is column name, `by` parameter is either `asc` or `desc`. The last parameter specifies the position of nulls, `nullsfirst` or `nullslast` |
+| `.limit(unsigned int by);`                    | Limit the amount of response rows. THIS IS MANDATORY FOR SELECT METHOD!!!                                                                                                                   |
+| `.offset(int by);`                            | Request response rows with offset is with its parameters.                                                                                                                                   |
+
+#### Getting the Query URL (for debugging)
+
+```arduino
+db.urlQuery_reset();
+```
+
+#### Reset the Query URL
+
+This method calls in mandatory, must be called after one opetation (let's say `doSelect()`, or `doUpdate()`) before doing anything else.
+
+```arduino
+db.urlQuery_reset();
 ```
 
 ## To-do (sorted by priority)
 
 - [x] Make Select API (GET Request), full with row limits (one by default)
-- [ ] Make filtering query builder method in Select, Update and Delete
-- [ ] Make order/sort query builder method to in Select
-- [ ] Implement Update with PATCH HTTPS Request
-- [ ] Implement Delete with DELETE HTTPS Request
+- [x] Make filtering query builder method in Select and update
+- [x] Make order/sort query builder method to in Select
+- [x] Implement Update with PATCH HTTPS Request
 - [ ] Implement calling RPC function with HTTPS Request
 - [ ] Implement several methods to implement [Supabase Realtime](https://supabase.com/docs/guides/realtime)
+- [ ] Port to ESP8266
 
+Better documentation is always a welcoming change 😄️😄️
