@@ -30,6 +30,9 @@ void setup() {
 
   db.begin(supabase_url, anon_key);
   db.login_email(email, password);
+
+  String read = db.from("examples").select("*").eq("role","praktikan").order("date","asc", true).limit(1).doSelect();
+  Serial.println(read);
 }
 
 void loop() {
