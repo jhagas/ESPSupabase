@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include <ESP32_Supabase.h>
+
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>
+#else
 #include <WiFi.h>
+#endif
 
 Supabase db;
 
@@ -16,7 +21,6 @@ const char *psswd = "";
 // Put Supabase account credentials here
 const String email = "";
 const String password = "";
-
 
 // Put your JSON that you want to insert rows
 // You can also use library like ArduinoJson generate this
@@ -52,12 +56,19 @@ void setup()
   db.urlQuery_reset();
 
   // Join operation with other table that connected via PK or FK
-  String read = db.from("table").select("*, other_table(other_table_column1, other_table_column2, another_table(*))").order("column", "asc", true).limit(1).doSelect();
+  read = db.from("table").select("*, other_table(other_table_column1, other_table_column2, another_table(*))").order("column", "asc", true).limit(1).doSelect();
   Serial.println(read);
   db.urlQuery_reset();
 
   // Insert operation
   int HTTPresponseCode = db.insert("table", JSON, upsert);
+  Serial.println(HTTPresponseCode);
+  db.urlQuery_reset();
+
+  // Update Operation
+  int code = db.update("table").eq("column", "value").doUpdate(JSON);
+  Serial.println(code);
+  db.urlQuery_reset();
 }
 
 void loop()
