@@ -1,6 +1,6 @@
 # ESP32 Supabase
 
-A Arduino Platform Library for connecting ESP32 to Supabase via REST API, including user authentication.
+An Arduino Platform Library for connecting ESP32 to Supabase via REST API, including user authentication.
 For now, it only supports the architectures espressif32 in PlatformIO targets.
 
 This library is build for microcontroller, 
