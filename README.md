@@ -10,6 +10,10 @@ For further information :
 - [Supabase Documentation](https://supabase.com/docs)
 - [PostgREST API Documentation](https://postgrest.org/en/stable/api.html)
 
+## Project Using This Library
+
+- [Monitoring dan Data Logging Sensor dengan Platform Database Supabase dan Aplikasi Web React.js](https://www.jhagas.space/posts/monitoring-data-logging-sensor-iot-supabase)
+
 ## Table of Contents
 
 - [ESP32 Supabase](#esp32-supabase)
