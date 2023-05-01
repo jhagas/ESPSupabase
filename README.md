@@ -4,7 +4,7 @@ Simple library to connect ESP32/8266 to Supabase via REST API, including user au
 
 ## Installation
 
-CLone this repo and copy the `Supabase` directory - consisting of a single `Supabase.h` and `Supabase.cpp` - to your local arduino library directory.
+CLone this repo and copy the `src` directory - consisting of a single `Supabase.h` and `Supabase.cpp` - to your local arduino library directory.
 
 In the same directory, create a `Secrets.h` file that contain your
 
