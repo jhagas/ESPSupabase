@@ -86,7 +86,6 @@ void setup()
   Serial.println(read);
 
   // insert into an RLS table "test_auth"
-  // insert query
   DynamicJsonDocument doc(1024);
   doc["value"] = 6;
   String jsonStr;
