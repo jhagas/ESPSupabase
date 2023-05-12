@@ -118,7 +118,7 @@ db.urlQuery_reset();
 - [x] Make order/sort query builder method to in Select
 - [x] Implement Update with PATCH HTTPS Request
 - [x] Port to ESP8266
-- [ ] Implement calling RPC function with HTTPS Request
+- [x] Implement calling RPC function with HTTPS Request
 - [ ] Implement several methods to implement [Supabase Realtime](https://supabase.com/docs/guides/realtime)
 
 Better documentation is always a welcoming change 😄️😄️
