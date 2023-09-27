@@ -23,22 +23,28 @@ int Supabase::_login_process()
     String query = "{\"" + loginMethod + "\": \"" + phone_or_email + "\", \"password\": \"" + password + "\"}";
     httpCode = https.POST(query);
 
-    if (httpCode > 0)
-    {
-      String data = https.getString();
-      deserializeJson(doc, data);
+  if (httpCode > 0)
+  {
+    String data = https.getString();
+    deserializeJson(doc, data);
+    if (doc.containsKey("access_token") && !doc["access_token"].isNull() && doc["access_token"].is<String>() && !doc["access_token"].as<String>().isEmpty()) {
       USER_TOKEN = doc["access_token"].as<String>();
+      authTimeout = doc["expires_in"].as<int>() * 1000;
       Serial.println("Login Success");
       Serial.println(USER_TOKEN);
+      Serial.println(data);
+    } else {
+      Serial.println("Login Failed: Invalid access token in response");
     }
-    else
-    {
-      Serial.println(phone_or_email);
-      Serial.println(password);
+  }
+  else
+  {
+    Serial.println(phone_or_email);
+    Serial.println(password);
 
-      Serial.print("Login Failed : ");
-      Serial.println(httpCode);
-    }
+    Serial.print("Login Failed : ");
+    Serial.println(httpCode);
+  }
 
     https.end();
     loginTime = millis();
@@ -88,7 +94,7 @@ int Supabase::insert(String table, String json, bool upsert)
     if (useAuth)
     {
       unsigned long t_now = millis();
-      if (t_now - loginTime >= 3500000)
+      if (t_now - loginTime >= authTimeout)
       {
         _login_process();
       }
@@ -249,7 +255,7 @@ String Supabase::doSelect()
   if (useAuth)
   {
     unsigned long t_now = millis();
-    if (t_now - loginTime >= 60 * 60 * 1000)
+    if (t_now - loginTime >= authTimeout)
     {
       _login_process();
     }
@@ -281,7 +287,7 @@ int Supabase::doUpdate(String json)
     if (useAuth)
     {
       unsigned long t_now = millis();
-      if (t_now - loginTime >= 3500000)
+      if (t_now - loginTime >= authTimeout)
       {
         _login_process();
       }
@@ -327,3 +333,33 @@ int Supabase::login_phone(String phone_a, String password_a)
   }
   return httpCode;
 }
+
+String Supabase::rpc(String func_name, String json_param = "")
+  {
+
+    int httpCode;
+
+    if( ! https.begin(client, hostname + "/rpc/" + func_name)){
+      return String(-100);
+    }
+    https.addHeader("apikey", key);
+    https.addHeader("Content-Type", "application/json");
+
+    if (useAuth){
+      unsigned long t_now = millis();
+      if (t_now - loginTime >= authTimeout){
+        _login_process();
+      }
+      https.addHeader("Authorization", "Bearer " + USER_TOKEN);
+    }
+
+    httpCode = https.POST(json_param);
+    if (httpCode > 0){
+      data = https.getString();
+      https.end();
+      return data;
+    }
+
+    https.end();
+    return String(httpCode);
+  }

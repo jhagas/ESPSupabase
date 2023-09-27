@@ -10,6 +10,10 @@ For further information :
 - [Supabase Documentation](https://supabase.com/docs)
 - [PostgREST API Documentation](https://postgrest.org/en/stable/api.html)
 
+## Project Using This Library
+
+- [Monitoring dan Data Logging Sensor dengan Platform Database Supabase dan Aplikasi Web React.js](https://www.jhagas.space/posts/monitoring-data-logging-sensor-iot-supabase)
+
 ## Table of Contents
 
 - [ESP32 Supabase](#esp32-supabase)
@@ -114,7 +118,7 @@ db.urlQuery_reset();
 - [x] Make order/sort query builder method to in Select
 - [x] Implement Update with PATCH HTTPS Request
 - [x] Port to ESP8266
-- [ ] Implement calling RPC function with HTTPS Request
+- [x] Implement calling RPC function with HTTPS Request
 - [ ] Implement several methods to implement [Supabase Realtime](https://supabase.com/docs/guides/realtime)
 
 Better documentation is always a welcoming change 😄️😄️
