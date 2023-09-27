@@ -53,7 +53,7 @@ See all examples in `examples` folder
 
 ### Building The Queries
 
-When building the queries, you can chaining the method like this example.
+When building the queries, you can chain the method like in this example.
 
 > Remember in `.select()` method, it is mandatory to put some low amount of `.limit()`, so you can avoid your microcontroller's memory get overflowed
 
