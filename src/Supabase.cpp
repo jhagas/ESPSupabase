@@ -80,6 +80,7 @@ Supabase &Supabase::Supabase::from(String table)
   url_query += (table + "?");
   return *this;
 }
+
 int Supabase::insert(String table, String json, bool upsert)
 {
   int httpCode;
@@ -87,14 +88,18 @@ int Supabase::insert(String table, String json, bool upsert)
   {
     https.addHeader("apikey", key);
     https.addHeader("Content-Type", "application/json");
+
+    String preferHeader = "return=representation";
     if (upsert)
     {
-      https.addHeader("Authorization", "resolution=merge-duplicates");
+      preferHeader += ",resolution=merge-duplicates";
     }
+    https.addHeader("Prefer", preferHeader);
+    
     if (useAuth)
     {
       unsigned long t_now = millis();
-      if (t_now - loginTime >= authTimeout)
+      if (t_now - loginTime >= 3500000)
       {
         _login_process();
       }
@@ -109,6 +114,7 @@ int Supabase::insert(String table, String json, bool upsert)
   }
   return httpCode;
 }
+
 Supabase &Supabase::select(String colls)
 {
   url_query += ("select=" + colls);
