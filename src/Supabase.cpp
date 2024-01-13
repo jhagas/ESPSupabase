@@ -99,7 +99,7 @@ int Supabase::insert(String table, String json, bool upsert)
     if (useAuth)
     {
       unsigned long t_now = millis();
-      if (t_now - loginTime >= 3500000)
+      if (t_now - loginTime >= authTimeout)
       {
         _login_process();
       }
