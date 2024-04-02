@@ -52,6 +52,7 @@ public:
   int insert(String table, String json, bool upsert);
   Supabase &select(String colls);
   Supabase &update(String table);
+  int upload(String bucket, String filename, String mime_type, Stream* stream, uint64_t size);
 
   // Comparison Operator
   Supabase &eq(String coll, String conditions);
