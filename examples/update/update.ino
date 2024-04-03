@@ -9,6 +9,10 @@
 
 Supabase db;
 
+// Put your supabase URL and Anon key here...
+String supabase_url = "";
+String anon_key = "";
+
 // Put your target table here
 String table = "";
 
@@ -28,6 +32,9 @@ void setup() {
     Serial.print(".");
   }
   Serial.println("Connected!");
+
+  // Beginning Supabase Connection
+  db.begin(supabase_url, anon_key);
 
   int code = db.update("table").eq("column", "value").doUpdate(JSON);
   Serial.println(code);

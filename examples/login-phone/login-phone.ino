@@ -10,7 +10,6 @@
 Supabase db;
 
 // Put your supabase URL and Anon key here...
-// Because Login already implemented, there's no need to use secretrole key
 const String supabase_url = "";
 const String anon_key = "";
 
@@ -38,6 +37,8 @@ void setup()
 
   db.begin(supabase_url, anon_key);
   db.login_phone(phone, password);
+
+  // Your Query
 }
 
 void loop()
