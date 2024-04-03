@@ -203,10 +203,9 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
   const uint16_t chunkSize = 255;
   uint64_t availableBytes = stream->available();
 
+
   while (availableBytes)
   {
-    availableBytes = stream->available();
-
     uint8_t bytesToRead = availableBytes >= chunkSize ? chunkSize : availableBytes;
 
     uint8_t buffer[bytesToRead];
@@ -215,11 +214,9 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
 
     client.write(buffer, bytesRead);
 
-    if (bytesToRead < chunkSize)
-    {
-      break;
-    }
+    availableBytes = stream->available();
   }
+
 
   written = client.write((uint8_t *)endingHeader.c_str(), endingHeader.length());
 
@@ -228,19 +225,21 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
   while (client.connected())
   {
     String line = client.readStringUntil('\n');
-    line = client.readStringUntil('\n');
+    line.trim(); // remove \r
 
     if (firstLine)
     {
+      if(line == "") continue;
+
       int codePos = line.indexOf(' ') + 1;
       httpCode = line.substring(codePos, line.indexOf(' ', codePos)).toInt();
-      log_i("Return Code READING: %d\n\r", httpCode);
       firstLine = false;
+      log_i("Return Code: %d\n\r", httpCode);
     }
 
     log_i("%s\n\r", line.c_str());
 
-    if (line == "\r")
+    if (line == "")
     {
       break;
     }
@@ -474,7 +473,7 @@ int Supabase::login_phone(String phone_a, String password_a)
   return httpCode;
 }
 
-String Supabase::rpc(String func_name, String json_param = "")
+String Supabase::rpc(String func_name, String json_param)
   {
 
     int httpCode;
