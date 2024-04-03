@@ -1,35 +1,8 @@
 # ESP32 Supabase
 
-An Arduino Platform Library for connecting ESP32 to Supabase via REST API, including user authentication.
-For now, it only supports the architectures espressif32 in PlatformIO targets.
+Simple library to connect ESP32/8266 to Supabase via REST API, including user authentication
 
-This library is build for microcontroller, 
-so I think it is appropriate to not include as much user management features, filters or modifier as in [Official Javascript Library](https://supabase.com/docs/reference/javascript/introduction).
-
-For further information :
-- [Supabase Documentation](https://supabase.com/docs)
-- [PostgREST API Documentation](https://postgrest.org/en/stable/api.html)
-
-## Project Using This Library
-
-- [Monitoring dan Data Logging Sensor dengan Platform Database Supabase dan Aplikasi Web React.js](https://www.jhagas.space/posts/monitoring-data-logging-sensor-iot-supabase)
-
-## Table of Contents
-
-- [ESP32 Supabase](#esp32-supabase)
-  - [Table of Contents](#table-of-contents)
-  - [Using This Library](#using-this-library)
-  - [Examples](#examples)
-  - [Available Method](#available-method)
-    - [Directly Makes Connection to Database](#directly-makes-connection-to-database)
-    - [Building The Queries](#building-the-queries)
-      - [Horizontal Filtering (comparison) Operator](#horizontal-filtering-comparison-operator)
-      - [Ordering, Limiting or Offseting the Result](#ordering-limiting-or-offseting-the-result)
-      - [Getting the Query URL (for debugging)](#getting-the-query-url-for-debugging)
-      - [Reset the Query URL](#reset-the-query-url)
-  - [To-do (sorted by priority)](#to-do-sorted-by-priority)
-
-## Using This Library
+## Installation
 
 This library is available at Arduino's Library Manager, as well as PlatformIO Library Manager
 - [Arduino Library Manager Guide](http://arduino.cc/en/guide/libraries)
@@ -38,24 +11,24 @@ This library is available at Arduino's Library Manager, as well as PlatformIO Li
 
 See all examples in `examples` folder
 
-## Available Method
+## Available Methods
 
 ### Directly Makes Connection to Database
 
 | Method                                           | Description                                                                                                                          |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `login_email(String email_a, String password_a)` | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                                  |
+| `login_phone(String phone_a, String password_a)` | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                                  |
 | `begin(String url_a, String key_a);`             | `url_a`  is a Supabase URL and `key_a` is supabase anon key. Returns `void`                                                          |
-| `login_email(String email_a, String password_a)` | Returns http response code `int`                                                                                                     |
-| `login_phone(String phone_a, String password_a)` | Returns http response code `int`                                                                                                     |
-| `insert(String table, String json, bool upsert)` | Returns http response code `int`. If you want to do upsert, set thirt parameter to `true`                                            |
-| `.doSelect()`                                    | Called at the end of select query chain, see [Examples](#examples). Returns http response payload (your data) from Supabase `String` |
-| `.doUpdate(String json)`                         | Called at the end of update query chain, see [Examples](#examples). Returns http response code from Supabase `int`                   |
+| `insert(String table, String json, bool upsert)` | Returns http response code `int`. If you want to do upsert, set third parameter to `true`                                            |
+| `.doSelect()`                                    | Called at the end of select query chain. Returns HTTP response payload (your data) from Supabase `String`                            |
+| `.doUpdate(String json)`                         | Called at the end of update query chain. Returns HTTP response code from Supabase `int`                                              |
 
 ### Building The Queries
 
 When building the queries, you can chain the method like in this example.
 
-> Remember in `.select()` method, it is mandatory to put some low amount of `.limit()`, so you can avoid your microcontroller's memory get overflowed
+> Remember in `.select()` method, you have to put `.limit()`, so your microcontroller's memory don't get overflowed
 
 ```arduino
 String read = db.from("table").select("*").eq("column", "value").order("column", "asc", true).limit(1).doSelect();
@@ -113,12 +86,14 @@ db.urlQuery_reset();
 
 ## To-do (sorted by priority)
 
-- [x] Make Select API (GET Request), full with row limits (one by default)
-- [x] Make filtering query builder method in Select and update
-- [x] Make order/sort query builder method to in Select
-- [x] Implement Update with PATCH HTTPS Request
-- [x] Port to ESP8266
-- [x] Implement calling RPC function with HTTPS Request
-- [ ] Implement several methods to implement [Supabase Realtime](https://supabase.com/docs/guides/realtime)
+- [ ] Implement [Supabase Realtime](https://supabase.com/docs/guides/realtime)
 
-Better documentation is always a welcoming change 😄️😄️
+## Project Using This Library
+
+- [Monitoring dan Data Logging Sensor dengan Platform Database Supabase dan Aplikasi Web React.js](https://www.jhagas.space/posts/monitoring-data-logging-sensor-iot-supabase)
+
+## References:
+
+- [Supabase Documentation](https://supabase.com/docs)
+- [Official Javascript Library](https://supabase.com/docs/reference/javascript/introduction)
+- [PostgREST API Documentation](https://postgrest.org/en/stable/api.html)
