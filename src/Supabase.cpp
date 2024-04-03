@@ -177,7 +177,7 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
 
   httpMainHeader += "Content-Length: " + String(contentLength + size) + "\n\n";
 
-  log_i("Hostname: %s\n\r", hostname_char);
+  Serial.printf("Hostname: %s\n\r", hostname_char);
 
   if (!client.connected())
   {
@@ -193,10 +193,10 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
   // send post header
   size_t written = client.write((uint8_t *)httpMainHeader.c_str(), httpMainHeader.length());
 
-  log_i("HTTP Request:\n\r%s\n\r", httpMainHeader.c_str());
-  log_i("\n\r%s\n\r", contentHeader.c_str());
-  log_i("\n\r(file of %llu bytes)\n\r", size);
-  log_i("\n\r%s\n\r", endingHeader.c_str());
+  Serial.printf("HTTP Request:\n\r%s\n\r", httpMainHeader.c_str());
+  Serial.printf("\n\r%s\n\r", contentHeader.c_str());
+  Serial.printf("\n\r(file of %llu bytes)\n\r", size);
+  Serial.printf("\n\r%s\n\r", endingHeader.c_str());
 
   written = client.write((uint8_t *)contentHeader.c_str(), contentHeader.length());
 
@@ -234,10 +234,10 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
       int codePos = line.indexOf(' ') + 1;
       httpCode = line.substring(codePos, line.indexOf(' ', codePos)).toInt();
       firstLine = false;
-      log_i("Return Code: %d\n\r", httpCode);
+      Serial.printf("Return Code: %d\n\r", httpCode);
     }
 
-    log_i("%s\n\r", line.c_str());
+    Serial.printf("%s\n\r", line.c_str());
 
     if (line == "")
     {
@@ -247,13 +247,13 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
 
   String response = client.readStringUntil('\n');
 
-  log_i("HTTP Response:\n\r");
-  log_i("==========\n\r");
-  log_i("%s\n\r", response.c_str());
-  log_i("==========\n\r");
-  log_i("HTTP End\n\r");
+  Serial.printf("HTTP Response:\n\r");
+  Serial.printf("==========\n\r");
+  Serial.printf("%s\n\r", response.c_str());
+  Serial.printf("==========\n\r");
+  Serial.printf("HTTP End\n\r");
 
-  log_i("Return Code: %d\n\r", httpCode);
+  Serial.printf("Return Code: %d\n\r", httpCode);
 
   return httpCode;
 }
