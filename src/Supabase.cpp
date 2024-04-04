@@ -253,7 +253,7 @@ int Supabase::upload(String bucket, String filename, String mime_type, uint8_t *
   return httpCode;
 }
 
-int Supabase::upload(String bucket, String filename, String mime_type, Stream *stream, uint64_t size)
+int Supabase::upload(String bucket, String filename, String mime_type, Stream *stream, uint32_t size)
 {
   int httpCode = 0;
 
