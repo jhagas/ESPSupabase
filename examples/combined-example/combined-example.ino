@@ -10,7 +10,6 @@
 Supabase db;
 
 // Put your supabase URL and Anon key here...
-// Because Login already implemented, there's no need to use secretrole key
 String supabase_url = "";
 String anon_key = "";
 
@@ -18,7 +17,8 @@ String anon_key = "";
 const char *ssid = "";
 const char *psswd = "";
 
-// Put Supabase account credentials here
+// User Credentials, not Supabase Account
+// OPTIONAL (only use this if you activate RLS) !!
 const String email = "";
 const String password = "";
 

@@ -10,17 +10,12 @@
 Supabase db;
 
 // Put your supabase URL and Anon key here...
-// Because Login already implemented, there's no need to use secretrole key
 String supabase_url = "";
 String anon_key = "";
 
 // put your WiFi credentials (SSID and Password) here
 const char *ssid = "";
 const char *psswd = "";
-
-// Put Supabase account credentials here
-const String email = "";
-const String password = "";
 
 void setup()
 {
@@ -38,9 +33,6 @@ void setup()
 
   // Beginning Supabase Connection
   db.begin(supabase_url, anon_key);
-
-  // Logging in with your account you made in Supabase
-  db.login_email(email, password);
 
   // Select query with filter and order, limiting the result is mandatory here
   String read = db.from("examples").select("*").eq("column", "value").order("column", "asc", true).limit(1).doSelect();
