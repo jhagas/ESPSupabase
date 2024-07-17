@@ -1,9 +1,10 @@
-#ifndef ESP32_Supabase_h
-#define ESP32_Supabase_h
+#ifndef ESP_Supabase_h
+#define ESP_Supabase_h
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
+#include <WebSocketsClient.h>
 
 #if defined(ESP8266)
 #include <ESP8266HTTPClient.h>
@@ -12,6 +13,13 @@
 #else
 #error "This library is not supported for your board! ESP32 and ESP8266"
 #endif
+
+struct SupabaseQuery
+{
+  String key;
+  String comparator;
+  String value;
+};
 
 class Supabase
 {
@@ -39,9 +47,11 @@ private:
   int _login_process();
 
 public:
+  SupabaseRealtime realtime;
   Supabase() {}
   ~Supabase() {}
 
+  void setupRealtime(String hostname_a, String key_a);
   void begin(String hostname_a, String key_a);
   String getQuery();
   // query reset
@@ -88,6 +98,48 @@ public:
   int login_phone(String phone_a, String password_a);
 
   String rpc(String func_name, String json_param = "");
+};
+
+class SupabaseRealtimeTableEntry
+{
+private:
+  WiFiClientSecure client;
+  WebSocketsClient webSocket;
+  std::function<void(JsonDocument)> handleEvent; // Changed to std::function
+  String jsonRealtimeConfig;
+  String key;
+  String hostname;
+
+public:
+  void setupHandler(std::function<void(JsonDocument)> handler);
+
+  SupabaseRealtimeTableEntry(String key, String hostname)
+  {
+    hostname.replace("https://", "");
+    this->key = key;
+    this->hostname = hostname;
+  }
+
+  void setupListener(String table, String event, SupabaseQuery queries[], int numqueries);
+  void processMessage(uint8_t *payload, size_t length, JsonDocument result);
+  void webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
+  void loop();
+};
+
+class SupabaseRealtime
+{
+private:
+  String hostname;
+  String key;
+  // Define an array to store SUPABASERealtimeTableEntry objects
+  std::vector<SupabaseRealtimeTableEntry> entries;
+
+public:
+  SupabaseRealtime(){}
+  void setupConnection(String hostname, String key);
+  // Function to add a SUPABASERealtimeTableEntry object to the array
+  void addEntry(String table, String event, SupabaseQuery queries[], int numqueries, std::function<void(JsonDocument)> handler);\
+  void loop();
 };
 
 #endif

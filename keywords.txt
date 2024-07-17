@@ -42,6 +42,8 @@ doSelect            KEYWORD2
 doUpdate            KEYWORD2
 login_email         KEYWORD2
 login_phone         KEYWORD2  
+upload              KEYWORD2  
+setupRealtime       KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
