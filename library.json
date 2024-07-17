@@ -19,7 +19,7 @@
   "examples": "examples/*/*.ino",
   "dependencies": {
     "bblanchon/ArduinoJson": "^7.1.0",
-    "links2004/WebSockets": "^2.4.2"
+    "links2004/WebSockets": "^2.4.1"
   },
   "repository": {
     "type": "git",
