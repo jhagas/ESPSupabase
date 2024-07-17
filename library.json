@@ -1,7 +1,7 @@
 {
-  "name": "ESP32 Supabase",
+  "name": "ESP-Supabase",
   "keywords": "supabase, postgresql, rest, database, IoT",
-  "version": "0.0.4",
+  "version": "0.0.7",
   "description": "A Arduino Platform Library for connecting ESP32/ESP8266 to Supabase, including user authentication",
   "authors": [
     {
@@ -18,7 +18,8 @@
   "platforms": "espressif32",
   "examples": "examples/*/*.ino",
   "dependencies": {
-    "bblanchon/ArduinoJson": "^6.21.1"
+    "bblanchon/ArduinoJson": "^7.1.0",
+    "links2004/WebSockets": "^2.4.2"
   },
   "repository": {
     "type": "git",

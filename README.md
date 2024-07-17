@@ -13,6 +13,8 @@ See all examples in `examples` folder
 
 ## Available Methods
 
+To use Realtime (Postgres Changes), please see the `examples/realtime-postgresChanges` folder. The broadcast and presence features are not implemented yet.
+
 ### Directly Makes Connection to Database
 
 | Method                                           | Description                                                                                                                          |
@@ -90,7 +92,9 @@ db.urlQuery_reset();
 
 ## To-do (sorted by priority)
 
-- [ ] Implement [Supabase Realtime](https://supabase.com/docs/guides/realtime)
+- [x] Implement Postgres Changes in [Supabase Realtime](https://supabase.com/docs/guides/realtime)
+- [ ] Implement Broadcast in [Supabase Realtime](https://supabase.com/docs/guides/realtime)
+- [ ] Implement Presence in [Supabase Realtime](https://supabase.com/docs/guides/realtime)
 
 ## Project Using This Library
 
