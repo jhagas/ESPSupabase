@@ -1,80 +1,5 @@
 #include "ESP-Supabase.h"
 
-// Internal functions
-void hexdump(const void *mem, uint32_t len, uint8_t cols)
-{
-  const uint8_t *src = (const uint8_t *)mem;
-  Serial.printf("\n[HEXDUMP] Address: 0x%08X len: 0x%X (%d)", (ptrdiff_t)src, len, len);
-  for (uint32_t i = 0; i < len; i++)
-  {
-    if (i % cols == 0)
-    {
-      Serial.printf("\n[0x%08X] 0x%08X: ", (ptrdiff_t)src, i);
-    }
-    Serial.printf("%02X ", *src);
-    src++;
-  }
-  Serial.printf("\n");
-}
-
-String getEventTable(JsonDocument result)
-{
-  String table = result["payload"]["data"]["table"];
-  return table;
-}
-
-String getEventType(JsonDocument result)
-{
-  String type = result["payload"]["data"]["type"];
-  return type;
-}
-
-String generateRealtimeConfig(String table, String type, SupabaseQuery query[], int numQuery)
-{
-  JsonDocument jsonRealtimeConfig;
-  deserializeJson(jsonRealtimeConfig, R"({
-          "event": "phx_join",
-          "topic": "realtime:ESP",
-          "payload": {
-            "config": {
-              "broadcast": {
-                "self": false
-              },
-              "presence": {
-                "key": ""
-              },
-              "postgres_changes": [
-                {
-                  "event": "event",
-                  "schema": "public",
-                  "table": "table"
-                }
-              ]
-            }
-          },
-          "ref": "sentRef"
-        })");
-
-  jsonRealtimeConfig["payload"]["config"]["postgres_changes"][0]["table"] = table;
-  jsonRealtimeConfig["payload"]["config"]["postgres_changes"][0]["event"] = type;
-
-  if (numQuery != 0)
-  {
-    JsonDocument where;
-    for (int i = 0; i < numQuery; i++)
-    {
-      where[query[i].key][query[i].comparator] = query[i].value;
-    }
-
-    jsonRealtimeConfig["payload"]["config"]["postgres_changes"][0]["where"] = where;
-  }
-
-  String config;
-  serializeJson(jsonRealtimeConfig, config);
-
-  return config;
-}
-
 void Supabase::_check_last_string()
 {
   unsigned int last = url_query.length() - 1;
@@ -107,8 +32,6 @@ int Supabase::_login_process()
         USER_TOKEN = doc["access_token"].as<String>();
         authTimeout = doc["expires_in"].as<int>() * 1000;
         Serial.println("Login Success");
-        Serial.println(USER_TOKEN);
-        Serial.println(data);
       }
       else
       {
@@ -133,11 +56,6 @@ int Supabase::_login_process()
   }
 
   return httpCode;
-}
-
-void Supabase::setupRealtime(String hostname_a, String key_a)
-{
-  realtime.setupConnection(hostname, key);
 }
 
 void Supabase::begin(String hostname_a, String key_a)
@@ -273,14 +191,14 @@ int Supabase::upload(String bucket, String filename, String mime_type, uint8_t *
   }
 
   // send post header
-  size_t written = client.write((uint8_t *)httpMainHeader.c_str(), httpMainHeader.length());
+  client.write((uint8_t *)httpMainHeader.c_str(), httpMainHeader.length());
 
   Serial.printf("HTTP Request:\n\r%s\n\r", httpMainHeader.c_str());
   Serial.printf("\n\r%s\n\r", contentHeader.c_str());
   Serial.printf("\n\r(file of %u bytes)\n\r", size);
   Serial.printf("\n\r%s\n\r", endingHeader.c_str());
 
-  written = client.write((uint8_t *)contentHeader.c_str(), contentHeader.length());
+  client.write((uint8_t *)contentHeader.c_str(), contentHeader.length());
 
   const uint16_t chunkSize = 255;
   uint32_t remainingBytes = size;
@@ -294,7 +212,7 @@ int Supabase::upload(String bucket, String filename, String mime_type, uint8_t *
     remainingBytes -= bytesToRead;
   }
 
-  written = client.write((uint8_t *)endingHeader.c_str(), endingHeader.length());
+  client.write((uint8_t *)endingHeader.c_str(), endingHeader.length());
 
   bool firstLine = true;
 
@@ -399,14 +317,14 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
   }
 
   // send post header
-  size_t written = client.write((uint8_t *)httpMainHeader.c_str(), httpMainHeader.length());
+  client.write((uint8_t *)httpMainHeader.c_str(), httpMainHeader.length());
 
   Serial.printf("HTTP Request:\n\r%s\n\r", httpMainHeader.c_str());
   Serial.printf("\n\r%s\n\r", contentHeader.c_str());
   Serial.printf("\n\r(file of %u bytes)\n\r", size);
   Serial.printf("\n\r%s\n\r", endingHeader.c_str());
 
-  written = client.write((uint8_t *)contentHeader.c_str(), contentHeader.length());
+  client.write((uint8_t *)contentHeader.c_str(), contentHeader.length());
 
   const uint16_t chunkSize = 255;
   uint64_t availableBytes = stream->available();
@@ -424,7 +342,7 @@ int Supabase::upload(String bucket, String filename, String mime_type, Stream *s
     availableBytes = stream->available();
   }
 
-  written = client.write((uint8_t *)endingHeader.c_str(), endingHeader.length());
+  client.write((uint8_t *)endingHeader.c_str(), endingHeader.length());
 
   bool firstLine = true;
 
@@ -711,123 +629,4 @@ String Supabase::rpc(String func_name, String json_param)
 
   https.end();
   return String(httpCode);
-}
-
-void SupabaseRealtimeTableEntry::setupHandler(std::function<void(JsonDocument)> handler)
-{ // Changed to std::function
-  handleEvent = handler;
-}
-
-void SupabaseRealtimeTableEntry::setupListener(String table, String event, SupabaseQuery queries[], int numqueries)
-{
-  this->jsonRealtimeConfig = generateRealtimeConfig(table, event, queries, numqueries);
-
-  Serial.println(this->jsonRealtimeConfig);
-  String slug = "/realtime/v1/websocket?apikey=" + this->key + "&vsn=1.0.0";
-
-  // Server address, port and URL
-  // 1st param: Enter your project URL there
-  // 2nd param: I have no idea, but it does not work with others than 443
-  // Port number found here: https://github.com/esp8266/Arduino/issues/1442
-  // 3rd param: url containing you anon key
-  webSocket.beginSSL(
-      this->hostname.c_str(),
-      443,
-      slug.c_str());
-  // If you want you can test with this one:
-  // webSocket.beginSSL("echo.websocket.org",443);
-
-  // event handler
-  webSocket.onEvent(std::bind(&SupabaseRealtimeTableEntry::webSocketEvent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-}
-
-void SupabaseRealtimeTableEntry::processMessage(uint8_t *payload, size_t length, JsonDocument result)
-{
-  String table = getEventTable(result);
-  if (table != "null")
-  {
-    String data = result["payload"]["data"]["record"];
-    deserializeJson(result, data);
-    handleEvent(result);
-  };
-}
-
-void SupabaseRealtimeTableEntry::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
-{
-  JsonDocument result;
-
-  switch (type)
-  {
-  case WStype_DISCONNECTED:
-    Serial.printf("[WSc] Disconnected!\n");
-    break;
-  case WStype_CONNECTED:
-    Serial.printf("[WSc] Connected to url: %s\n", payload);
-    // // send message to server when Connected
-    // Serial.println(this->jsonRealtimeConfig);
-    // webSocket.sendTXT(jsonRealtimeConfig);
-    // Some sort of error with storing the jsonRealtimeConfig
-    // When executing the above line, the ESP32 crashes
-    // Guru Meditation Error: Core  1 panic'ed (LoadProhibited). Exception was unhandled.
-    Serial.println("Sent config");
-    break;
-  case WStype_TEXT:
-    deserializeJson(result, payload);
-    processMessage(payload, length, result);
-    // send message to server
-    // webSocket.sendTXT("message here");
-    break;
-  case WStype_BIN:
-    Serial.printf("[WSc] get binary length: %u\n", length);
-    // hexdump(payload, length, 16);
-
-    // send data to server
-    // webSocket.sendBIN(payload, length);
-    break;
-  case WStype_ERROR:
-    Serial.printf("[WSc] Error: %s\n", payload);
-    break;
-  case WStype_FRAGMENT_TEXT_START:
-  case WStype_FRAGMENT_BIN_START:
-  case WStype_FRAGMENT:
-  case WStype_PING:
-  case WStype_PONG:
-  case WStype_FRAGMENT_FIN:
-    break;
-  }
-}
-
-void SupabaseRealtimeTableEntry::loop()
-{
-  webSocket.loop();
-}
-
-void SupabaseRealtime::setupConnection(String hostname, String key)
-{
-  Serial.println("Setup Realtime Connection");
-  this->hostname = hostname;
-  this->key = key;
-}
-
-// Function to add a SUPABASERealtimeTableEntry object to the array
-void SupabaseRealtime::addEntry(String table, String event, SupabaseQuery queries[], int numqueries, std::function<void(JsonDocument)> handler)
-{
-  SupabaseRealtimeTableEntry entry = SupabaseRealtimeTableEntry(this->key, this->hostname);
-  entry.setupHandler(handler);
-  entry.setupListener(table, event, queries, numqueries);
-  entries.push_back(entry);
-}
-
-void SupabaseRealtime::loop()
-{
-  if (entries.size() == 0)
-  {
-    return;
-  }
-  for (unsigned int i = 0; i < entries.size(); i++)
-  {
-    // entries[i].webSocket.loop();
-    // Serial.println();
-    entries[i].loop();
-  }
 }

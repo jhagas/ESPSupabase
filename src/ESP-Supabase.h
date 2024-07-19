@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
-#include <WebSocketsClient.h>
 
 #if defined(ESP8266)
 #include <ESP8266HTTPClient.h>
@@ -14,82 +13,32 @@
 #error "This library is not supported for your board! ESP32 and ESP8266"
 #endif
 
-struct SupabaseQuery
-{
-  String key;
-  String comparator;
-  String value;
-};
-
-class SupabaseRealtimeTableEntry
-{
-private:
-  WiFiClientSecure client;
-  WebSocketsClient webSocket;
-  std::function<void(JsonDocument)> handleEvent; // Changed to std::function
-  String jsonRealtimeConfig;
-  String key;
-  String hostname;
-
-public:
-  void setupHandler(std::function<void(JsonDocument)> handler);
-
-  SupabaseRealtimeTableEntry(String key, String hostname)
-  {
-    hostname.replace("https://", "");
-    this->key = key;
-    this->hostname = hostname;
-  }
-
-  void setupListener(String table, String event, SupabaseQuery queries[], int numqueries);
-  void processMessage(uint8_t *payload, size_t length, JsonDocument result);
-  void webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
-  void loop();
-};
-
-class SupabaseRealtime
-{
-private:
-  String hostname;
-  String key;
-  // Define an array to store SUPABASERealtimeTableEntry objects
-  std::vector<SupabaseRealtimeTableEntry> entries;
-
-public:
-  SupabaseRealtime(){}
-  void setupConnection(String hostname, String key);
-  // Function to add a SUPABASERealtimeTableEntry object to the array
-  void addEntry(String table, String event, SupabaseQuery queries[], int numqueries, std::function<void(JsonDocument)> handler);\
-  void loop();
-};
-
 class Supabase
 {
 private:
   String hostname;
   String key;
-  String USER_TOKEN;
 
   String url_query;
 
   WiFiClientSecure client;
   HTTPClient https;
 
-  bool useAuth;
-  unsigned long loginTime;
   String phone_or_email;
   String password;
   String data;
   String loginMethod;
   String filter;
 
-  unsigned int authTimeout = 0;
-
   void _check_last_string();
   int _login_process();
+  unsigned int authTimeout = 0;
+  unsigned long loginTime;
 
 public:
-  SupabaseRealtime realtime;
+  bool useAuth;
+  String USER_TOKEN;
+
   Supabase() {}
   ~Supabase() {}
 

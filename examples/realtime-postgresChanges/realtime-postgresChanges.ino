@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <ESP_Supabase.h>
+#include <ESP_Supabase_Realtime.h>
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
@@ -8,87 +8,43 @@
 #include <WiFi.h>
 #endif
 
-enum DEBUGTYPES {
-  DEBUG_ERROR,
-  DEBUG_INFO,
-  DEBUG_MOTOR,
-  DEBUG_VERBOSE,
-  DEBUG_LED,
-  DEBUG_FEED,
-  DEBUG_SYNC
-};
+SupabaseRealtime realtime;
 
-typedef enum DEBUGTYPES DEBUGTYPES;
+void DevicesTableHandler(String result)
+{
+  JsonDocument doc;
+  deserializeJson(doc, result);
 
-
-DEBUGTYPES APP_DEBUG_LEVEL[4] = {
-  DEBUG_ERROR,
-  DEBUG_FEED,
-  DEBUG_INFO,
-  DEBUG_SYNC
-};
-
-void DEBUG_PRINT(String str, DEBUGTYPES debuglevel) {
-  for (int i = 0; i < 4; i++) {
-    if (APP_DEBUG_LEVEL[i] == debuglevel) {
-      Serial.println(String(APP_DEBUG_LEVEL[i]) + " " + str);
-      return;
-    }
-  }
-
-  return;
+  // Example of what you can do with the result
+  String state = doc["state"];
+  Serial.println(state);
 }
 
-
-void wifiConnected() {
-  DEBUG_PRINT("WiFi Connected: " + WiFi.SSID(), DEBUG_INFO);
-  DEBUG_PRINT("IP Address: ", DEBUG_INFO);
-  DEBUG_PRINT(String(WiFi.localIP()), DEBUG_INFO);
-}
-
-bool waitForWifi(int timeout = 0, String method = "") {
-  int cnt = 0;
-  ProgressBar status = ProgressBar(timeout);
-  DEBUG_PRINT("", DEBUG_INFO);
-
-  DEBUG_PRINT("Attempting Connection: " + method, DEBUG_INFO);
-  status.start();
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    status.step();
-    cnt++;
-
-    if (cnt >= timeout && timeout > 0) {
-      status.end();
-      return false;
-    }
-  }
-  status.end();
-
-  return true;
-}
-
-Supabase db;
-
-void DevicesTableHandler(JsonDocument result) {
-  serializeJson(result, Serial);
-}
-
-void setup() {
+void setup()
+{
   Serial.begin(9600);
 
   WiFi.begin("ssid", "password");
-  if (waitForWifi(50, ".ENV")) {
-    wifiConnected();
-  };
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(100);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to WiFi");
 
-  db.setupRealtime(SUPABASEURL, SUPABASEANONKEY);
-  int numqueries = 0;
-  SUPABASEQuery queries[numqueries] = {};
-  db.realtime.addEntry("Devices", "*", queries, numqueries, DevicesTableHandler);
+  realtime.begin("https://project.supabase.co", "apikey");
+  realtime.login_email("email", "password"); // Only if you activate RLS in your Supabase Postgres Table
+
+  // Parameter 1 : Table name
+  // Parameter 2 : Event type ("*" | "INSERT" | "UPDATE" | "DELETE")
+  // Parameter 3 : Filter
+  //   Please read : https://supabase.com/docs/guides/realtime/postgres-changes?queryGroups=language&language=js#available-filters
+  //   empty string if you don't want to filter the result
+  // Parameter 4 : Callback function, how to handle the result (message)
+  realtime.listen("table", "*", "", DevicesTableHandler);
 }
 
-void loop() {
-  db.realtime.loop();
+void loop()
+{
+  realtime.loop();
 }
