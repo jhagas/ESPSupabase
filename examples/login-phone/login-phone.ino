@@ -1,3 +1,5 @@
+// ONLY IF you activate RLS in your Supabase Table
+
 #include <Arduino.h>
 #include <ESPSupabase.h>
 
@@ -14,9 +16,8 @@ const String supabase_url = "";
 const String anon_key = "";
 
 // put your WiFi credentials (SSID and Password) here
-const char* ssid = "your wifi ssid";
-const char* psswd = "your wifi password";
-
+const char *ssid = "your wifi ssid";
+const char *psswd = "your wifi password";
 
 // Put Supabase account credentials here
 const String phone = "";
@@ -33,15 +34,17 @@ void setup()
     delay(100);
     Serial.print(".");
   }
-  Serial.println("Connected!");
+  Serial.println("\nConnected!");
 
   db.begin(supabase_url, anon_key);
+
+  // ONLY IF you activate RLS in your Supabase Table
   db.login_phone(phone, password);
 
-  // Your Query
+  // Your Query ...
 }
 
 void loop()
 {
-  delay(10);
+  delay(1000);
 }

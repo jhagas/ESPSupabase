@@ -1,6 +1,6 @@
 # ESPSupabase
 
-Simple library to connect ESP32/8266 to Supabase via REST API, including user authentication
+Simple library to connect ESP32/8266 to Supabase via REST API and WebSockets (for Realtime), including user authentication
 
 ## Installation
 

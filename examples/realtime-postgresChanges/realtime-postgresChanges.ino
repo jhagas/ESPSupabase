@@ -8,6 +8,14 @@
 #include <WiFi.h>
 #endif
 
+// Put your supabase URL and Anon key here...
+String supabase_url = "https://yourproject.supabase.co";
+String anon_key = "anonkey";
+
+// put your WiFi credentials (SSID and Password) here
+const char *ssid = "ssid";
+const char *psswd = "pass";
+
 SupabaseRealtime realtime;
 
 void HandleChanges(String result)
@@ -15,7 +23,7 @@ void HandleChanges(String result)
   JsonDocument doc;
   deserializeJson(doc, result);
 
-  // Example of what you can do with the result
+  // EXAMPLE of what you can do with the result
   String tableName = doc["table"];
   String event = doc["type"];
   String changes = doc["record"];
@@ -30,16 +38,18 @@ void setup()
 {
   Serial.begin(9600);
 
-  WiFi.begin("ssid", "password");
+  WiFi.begin(ssid, psswd);
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(100);
     Serial.print(".");
   }
-  Serial.println("\nConnected to WiFi");
+  Serial.println("\nConnected!");
 
-  realtime.begin("https://project.supabase.co", "apikey", HandleChanges);
-  realtime.login_email("email", "password"); // Only if you activate RLS in your Supabase Postgres Table
+  realtime.begin(supabase_url, anon_key, HandleChanges); 
+
+  // Uncomment this line below, if you activate RLS in your Supabase Table
+  // realtime.login_email("email", "password");
 
   // Parameter 1 : Table name
   // Parameter 2 : Event type ("*" | "INSERT" | "UPDATE" | "DELETE")
@@ -47,6 +57,7 @@ void setup()
   // Parameter 4 : Filter
   //   Please read : https://supabase.com/docs/guides/realtime/postgres-changes?queryGroups=language&language=js#available-filters
   //   empty string if you don't want to filter the result
+  // EXAMPLE :
   realtime.addChangesListener("table1", "INSERT", "public", "id=eq.0");
   // You can add multiple table listeners
   realtime.addChangesListener("table2", "*", "public", "");

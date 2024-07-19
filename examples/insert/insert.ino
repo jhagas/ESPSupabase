@@ -10,8 +10,12 @@
 Supabase db;
 
 // Put your supabase URL and Anon key here...
-String supabase_url = "";
-String anon_key = "";
+String supabase_url = "https://yourproject.supabase.co";
+String anon_key = "anonkey";
+
+// put your WiFi credentials (SSID and Password) here
+const char *ssid = "ssid";
+const char *psswd = "pass";
 
 // Put your target table here
 String table = "";
@@ -22,25 +26,33 @@ String JSON = "";
 
 bool upsert = false;
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
 
   Serial.print("Connecting to WiFi");
-  WiFi.begin("ssid", "password");
-  while (WiFi.status() != WL_CONNECTED) {
+  WiFi.begin(ssid, psswd);
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(100);
     Serial.print(".");
   }
-  Serial.println("Connected!");
+  Serial.println("\nConnected!");
 
   // Beginning Supabase Connection
   db.begin(supabase_url, anon_key);
+
+  // Uncomment this line below, if you activate RLS in your Supabase Table
+  // db.login_email("email", "password");
+  // You can also use
+  // db.login_phone("phone", "password");
 
   int code = db.insert(table, JSON, upsert);
   Serial.println(code);
   db.urlQuery_reset();
 }
 
-void loop() {
-  delay(10);
+void loop()
+{
+  delay(1000);
 }

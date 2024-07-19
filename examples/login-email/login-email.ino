@@ -1,3 +1,5 @@
+// ONLY IF you activate RLS in your Supabase Table
+
 #include <Arduino.h>
 #include <ESPSupabase.h>
 
@@ -30,14 +32,16 @@ void setup() {
     delay(100);
     Serial.print(".");
   }
-  Serial.println("Connected!");
+  Serial.println("\nConnected!");
 
   db.begin(supabase_url, anon_key);
+
+  // ONLY IF you activate RLS in your Supabase Table
   db.login_email(email, password);
 
   // Your Query ...
 }
 
 void loop() {
-  delay(10);
+  delay(1000);
 }

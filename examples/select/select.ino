@@ -10,12 +10,12 @@
 Supabase db;
 
 // Put your supabase URL and Anon key here...
-String supabase_url = "";
-String anon_key = "";
+String supabase_url = "https://yourproject.supabase.co";
+String anon_key = "anonkey";
 
 // put your WiFi credentials (SSID and Password) here
-const char *ssid = "";
-const char *psswd = "";
+const char *ssid = "ssid";
+const char *psswd = "pass";
 
 void setup()
 {
@@ -29,19 +29,30 @@ void setup()
     delay(100);
     Serial.print(".");
   }
-  Serial.println("Connected!");
+  Serial.println("\nConnected!");
 
   // Beginning Supabase Connection
   db.begin(supabase_url, anon_key);
 
-  // Select query with filter and order, limiting the result is mandatory here
-  String read = db.from("examples").select("*").eq("column", "value").order("column", "asc", true).limit(1).doSelect();
+  // Uncomment this line below, if you activate RLS in your Supabase Table
+  // db.login_email("email", "password");
+  // You can also use
+  // db.login_phone("phone", "password");
+
+  // MAKE SURE YOU HAVE YOUR SUPABASE DATABASE SETUP FIRST, THIS LIBRARY CANNOT SET THE DATABASE FOR YOU
+  // Basic select query
+  String read = db.from("examples").select("*").doSelect();
   Serial.println(read);
 
   // Reset Your Query before doing everything else
   db.urlQuery_reset();
 
-  // Join operation with other table that connected via PK or FK
+  // More advanced query, FOR DEMONSTRATION PURPOSES ONLY
+  String read = db.from("examples").select("*").eq("column", "value").order("column", "asc", true).limit(1).doSelect();
+  Serial.println(read);
+  db.urlQuery_reset();
+
+  // Join operation with other table that connected via PK or FK, FOR DEMONSTRATION PURPOSES ONLY
   String read = db.from("examples").select("*, other_table(other_table_column1, other_table_column2, another_table(*))").order("column", "asc", true).limit(1).doSelect();
   Serial.println(read);
   db.urlQuery_reset();
@@ -49,5 +60,5 @@ void setup()
 
 void loop()
 {
-  delay(10);
+  delay(1000);
 }

@@ -10,9 +10,8 @@
 Supabase db;
 
 // Put your supabase URL and Anon key here...
-// Because Login already implemented, there's no need to use secretrole key
-String supabase_url = "";
-String anon_key = "";
+String supabase_url = "https://yourproject.supabase.co";
+String anon_key = "anonkey";
 
 // put your WiFi credentials (SSID and Password) here
 const char *ssid = "";
@@ -75,18 +74,19 @@ void setup()
     delay(100);
     Serial.print(".");
   }
-
-  Serial.println("Connected!");
+  Serial.println("\nConnected!");
 
   db.begin(supabase_url, anon_key);
 
-  int loginResponse = db.login_email(email, password);
-
-  if (loginResponse != 200)
-  {
-    Serial.printf("Login failed with code: %d.\n\r", loginResponse);
-    return;
-  }
+  // Uncomment this line below, if you activate RLS in your Supabase Table
+  // int loginResponse = db.login_email(email, password);
+  // You can also use
+  // int loginResponse = db.login_phone("phone", "password");
+  // if (loginResponse != 200)
+  // {
+  //   Serial.printf("Login failed with code: %d.\n\r", loginResponse);
+  //   return;
+  // }
 
   int uploadResponse = db.upload(bucket, "supabase_example_" + String(millis()) + ".txt", "text/plain", &file, file.size());
 
@@ -104,5 +104,5 @@ void setup()
 
 void loop()
 {
-  delay(10000);
+  delay(1000);
 }
