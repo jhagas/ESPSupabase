@@ -10,14 +10,20 @@
 
 SupabaseRealtime realtime;
 
-void DevicesTableHandler(String result)
+void HandleChanges(String result)
 {
   JsonDocument doc;
   deserializeJson(doc, result);
 
   // Example of what you can do with the result
-  String state = doc["state"];
-  Serial.println(state);
+  String tableName = doc["table"];
+  String event = doc["type"];
+  String changes = doc["record"];
+
+  Serial.print(tableName);
+  Serial.print(" : ");
+  Serial.println(event);
+  Serial.println(changes);
 }
 
 void setup()
@@ -32,16 +38,20 @@ void setup()
   }
   Serial.println("\nConnected to WiFi");
 
-  realtime.begin("https://project.supabase.co", "apikey");
+  realtime.begin("https://project.supabase.co", "apikey", HandleChanges);
   realtime.login_email("email", "password"); // Only if you activate RLS in your Supabase Postgres Table
 
   // Parameter 1 : Table name
   // Parameter 2 : Event type ("*" | "INSERT" | "UPDATE" | "DELETE")
-  // Parameter 3 : Filter
+  // Parameter 3 : Your Supabase Table Postgres Schema
+  // Parameter 4 : Filter
   //   Please read : https://supabase.com/docs/guides/realtime/postgres-changes?queryGroups=language&language=js#available-filters
   //   empty string if you don't want to filter the result
-  // Parameter 4 : Callback function, how to handle the result (message)
-  realtime.listen("table", "*", "", DevicesTableHandler);
+  realtime.addChangesListener("table1", "INSERT", "public", "id=eq.0");
+  // You can add multiple table listeners
+  realtime.addChangesListener("table2", "*", "public", "");
+
+  realtime.listen();
 }
 
 void loop()

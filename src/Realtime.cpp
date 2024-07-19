@@ -39,9 +39,14 @@ int SupabaseRealtime::_login_process()
       deserializeJson(doc, data);
       if (doc.containsKey("access_token") && !doc["access_token"].isNull() && doc["access_token"].is<String>() && !doc["access_token"].as<String>().isEmpty())
       {
-        USER_TOKEN = doc["access_token"].as<String>();
+        String USER_TOKEN = doc["access_token"].as<String>();
         authTimeout = doc["expires_in"].as<int>() * 1000;
         Serial.println("Login Success");
+
+        JsonDocument authConfig;
+        deserializeJson(authConfig, tokenConfig);
+        authConfig["payload"]["access_token"] = USER_TOKEN;
+        serializeJson(authConfig, configAUTH);
       }
       else
       {
@@ -68,20 +73,26 @@ int SupabaseRealtime::_login_process()
   return httpCode;
 }
 
-void SupabaseRealtime::listen(String table, String event, String filter, void (*func)(String))
+void SupabaseRealtime::addChangesListener(String table, String event, String schema, String filter)
 {
-  String configJSON;
-  JsonDocument jsonRealtimeConfig;
-  deserializeJson(jsonRealtimeConfig, config);
-
-  jsonRealtimeConfig["payload"]["config"]["postgres_changes"][0]["table"] = table;
-  jsonRealtimeConfig["payload"]["config"]["postgres_changes"][0]["event"] = event;
+  JsonDocument tableObj;
+  
+  tableObj["event"] = event;
+  tableObj["schema"] = schema;
+  tableObj["table"] = table;
 
   if (filter != "")
   {
-    jsonRealtimeConfig["payload"]["config"]["postgres_changes"][0]["filter"] = filter;
+    tableObj["filter"] = filter;
   }
 
+  postgresChanges.add(tableObj);
+}
+
+void SupabaseRealtime::listen()
+{
+  deserializeJson(jsonRealtimeConfig, config);
+  jsonRealtimeConfig["payload"]["config"]["postgres_changes"] = postgresChanges;
   serializeJson(jsonRealtimeConfig, configJSON);
 
   String slug = "/realtime/v1/websocket?apikey=" + String(key) + "&vsn=1.0.0";
@@ -97,29 +108,23 @@ void SupabaseRealtime::listen(String table, String event, String filter, void (*
       slug.c_str());
 
   // event handler
-  webSocket.onEvent(std::bind(&SupabaseRealtime::webSocketEvent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, configJSON, func));
+  webSocket.onEvent(std::bind(&SupabaseRealtime::webSocketEvent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
-void SupabaseRealtime::processMessage(uint8_t *payload, void (*func)(String))
+void SupabaseRealtime::processMessage(uint8_t *payload)
 {
   JsonDocument result;
   deserializeJson(result, payload);
   String table = getEventTable(result);
   if (table != "null")
   {
-    String data = result["payload"]["data"]["record"];
-    func(data);
+    String data = result["payload"]["data"];
+    handler(data);
   };
 }
 
-void SupabaseRealtime::webSocketEvent(WStype_t type, uint8_t *payload, size_t length, String configJSON, void (*func)(String))
+void SupabaseRealtime::webSocketEvent(WStype_t type, uint8_t *payload, size_t length)
 {
-  String configAUTH;
-  JsonDocument authConfig;
-  deserializeJson(authConfig, tokenConfig);
-  authConfig["payload"]["access_token"] = USER_TOKEN;
-  serializeJson(authConfig, configAUTH);
-
   switch (type)
   {
   case WStype_DISCONNECTED:
@@ -131,13 +136,20 @@ void SupabaseRealtime::webSocketEvent(WStype_t type, uint8_t *payload, size_t le
     webSocket.sendTXT(configAUTH);
     break;
   case WStype_TEXT:
-    processMessage(payload, func);
+    processMessage(payload);
     break;
   case WStype_BIN:
     Serial.printf("[WSc] get binary length: %u\n", length);
     break;
   case WStype_ERROR:
     Serial.printf("[WSc] Error: %s\n", payload);
+    break;
+  case WStype_PING:
+  case WStype_PONG:
+  case WStype_FRAGMENT_TEXT_START:
+  case WStype_FRAGMENT_BIN_START:
+  case WStype_FRAGMENT:
+  case WStype_FRAGMENT_FIN:
     break;
   }
 }
@@ -158,22 +170,16 @@ void SupabaseRealtime::loop()
   {
     last_ms = millis();
     webSocket.sendTXT(jsonRealtimeHeartbeat);
-
-    String configJSON;
-    JsonDocument authConfig;
-    deserializeJson(authConfig, tokenConfig);
-
-    authConfig["payload"]["access_token"] = USER_TOKEN;
-    serializeJson(authConfig, configJSON);
-    webSocket.sendTXT(configJSON);
+    webSocket.sendTXT(configAUTH);
   }
 }
 
-void SupabaseRealtime::begin(String hostname, String key)
+void SupabaseRealtime::begin(String hostname, String key, void (*func)(String))
 {
   hostname.replace("https://", "");
   this->hostname = hostname;
   this->key = key;
+  this->handler = func;
 }
 
 int SupabaseRealtime::login_email(String email_a, String password_a)
