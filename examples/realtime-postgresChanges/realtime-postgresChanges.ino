@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <ESP_Supabase_Realtime.h>
+#include <ESPSupabaseRealtime.h>
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>

@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <ESP_Supabase.h>
+#include <ESPSupabase.h>
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>

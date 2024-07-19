@@ -1,5 +1,4 @@
-
-#include <ESP_Supabase.h>
+#include <ESPSupabase.h>
 #include "SPIFFS.h"
 
 #if defined(ESP8266)

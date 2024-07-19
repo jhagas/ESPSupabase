@@ -6,7 +6,8 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Supabase	        KEYWORD2
+Supabase	          KEYWORD2
+SupabaseRealtime    KEYWORD2
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -42,8 +43,11 @@ doSelect            KEYWORD2
 doUpdate            KEYWORD2
 login_email         KEYWORD2
 login_phone         KEYWORD2  
-upload              KEYWORD2  
-setupRealtime       KEYWORD2
+upload              KEYWORD2
+
+addChangesListener  KEYWORD2
+listen              KEYWORD2
+loop                KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

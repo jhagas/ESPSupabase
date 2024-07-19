@@ -1,4 +1,4 @@
-#include "ESP-Supabase-Realtime.h"
+#include "ESPSupabaseRealtime.h"
 
 // Internal functions
 String getEventTable(JsonDocument result)
