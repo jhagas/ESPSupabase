@@ -95,7 +95,7 @@ To use Realtime (Postgres Changes), please see the `examples/realtime-postgresCh
 | `login_email(String email_a, String password_a)`                               | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                 |
 | `login_phone(String phone_a, String password_a)`                               | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                 |
 | `begin(String hostname, String key, void (*func)(String))`                     | Setup the Realtime connection with Supabase URL and Anon key, also put the handle function for the incoming message |
-| `sendPresence(String device_name)`                                             | Track the presence (online status) of your ESP device (OPTIONAL)                                                    |
+| `sendPresence(String device_name)`                                             | Track the presence (online status) of your ESP device. Track presence on realtime channel "ESP"                     |
 | `addChangesListener(String table, String event, String schema, String filter)` | Listen to Postgres Database changes, you can add multiple of this if you want to track changes form multiple tables |
 | `listen()`                                                                     | Start websocket connection                                                                                          |
 | `loop()`                                                                       | Put this in your loop() function, this will handle the websocket connection and send heartbeats to Supabase         |
