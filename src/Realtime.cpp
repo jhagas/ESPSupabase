@@ -75,8 +75,9 @@ int SupabaseRealtime::_login_process()
 
 void SupabaseRealtime::addChangesListener(String table, String event, String schema, String filter)
 {
+  isPostgresChanges = true;
   JsonDocument tableObj;
-  
+
   tableObj["event"] = event;
   tableObj["schema"] = schema;
   tableObj["table"] = table;
@@ -89,10 +90,32 @@ void SupabaseRealtime::addChangesListener(String table, String event, String sch
   postgresChanges.add(tableObj);
 }
 
+void SupabaseRealtime::sendPresence(String device_name)
+{
+  JsonDocument presence;
+  isPresence = true;
+
+  deserializeJson(presence, jsonPresence);
+  presence["payload"]["payload"]["user"] = device_name;
+  serializeJson(presence, presenceConfig);
+}
+
 void SupabaseRealtime::listen()
 {
   deserializeJson(jsonRealtimeConfig, config);
-  jsonRealtimeConfig["payload"]["config"]["postgres_changes"] = postgresChanges;
+  if (isPostgresChanges)
+  {
+    jsonRealtimeConfig["payload"]["config"]["postgres_changes"] = postgresChanges;
+  }
+  if (isPresence)
+  {
+    jsonRealtimeConfig["payload"]["config"]["presence"]["key"] = "";
+  }
+  // if (isBroadcast)
+  // {
+  //   // not implemented yet
+  //   // jsonRealtimeConfig["payload"]["config"]["broadcast"] = broadcastConfig;
+  // }
   serializeJson(jsonRealtimeConfig, configJSON);
 
   String slug = "/realtime/v1/websocket?apikey=" + String(key) + "&vsn=1.0.0";
@@ -133,7 +156,10 @@ void SupabaseRealtime::webSocketEvent(WStype_t type, uint8_t *payload, size_t le
   case WStype_CONNECTED:
     Serial.println("[WSc] Connected!");
     webSocket.sendTXT(configJSON);
-    webSocket.sendTXT(configAUTH);
+    if (useAuth)
+      webSocket.sendTXT(configAUTH);
+    if (isPresence)
+      webSocket.sendTXT(presenceConfig);
     break;
   case WStype_TEXT:
     processMessage(payload);
@@ -156,7 +182,8 @@ void SupabaseRealtime::webSocketEvent(WStype_t type, uint8_t *payload, size_t le
 
 void SupabaseRealtime::loop()
 {
-  if (useAuth && millis() - loginTime > authTimeout / 2)
+  // Request AUTH token every 50 minutes (on defautlt timeout / 60 min)
+  if (useAuth && millis() - loginTime > authTimeout / 1.2)
   {
     webSocket.disconnect();
     _login_process();
@@ -166,11 +193,13 @@ void SupabaseRealtime::loop()
     webSocket.loop();
   }
 
+  // send heartbeat every 30 seconds
   if (millis() - last_ms > 30000)
   {
     last_ms = millis();
     webSocket.sendTXT(jsonRealtimeHeartbeat);
-    webSocket.sendTXT(configAUTH);
+    if (useAuth)
+      webSocket.sendTXT(configAUTH);
   }
 }
 

@@ -1,13 +1,12 @@
 #include <Arduino.h>
-#include <ESPSupabase.h>
+#include <ArduinoJson.h>
+#include <ESPSupabaseRealtime.h>
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
 #else
 #include <WiFi.h>
 #endif
-
-Supabase db;
 
 // Put your supabase URL and Anon key here...
 String supabase_url = "https://yourproject.supabase.co";
@@ -17,20 +16,17 @@ String anon_key = "anonkey";
 const char *ssid = "ssid";
 const char *psswd = "pass";
 
-// Put your target table here
-String table = "";
+SupabaseRealtime realtime;
 
-// Put your JSON that you want to insert rows
-// You can also use library like ArduinoJson generate this
-String JSON = "";
-
-bool upsert = false;
+void HandleChanges(String result)
+{
+  return;
+}
 
 void setup()
 {
   Serial.begin(9600);
 
-  Serial.print("Connecting to WiFi");
   WiFi.begin(ssid, psswd);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -39,21 +35,23 @@ void setup()
   }
   Serial.println("\nConnected!");
 
-  // Beginning Supabase Connection
-  db.begin(supabase_url, anon_key);
+  realtime.begin(supabase_url, anon_key, HandleChanges);
 
-  // Uncomment this line below, if you activate RLS in your Supabase Table
-  // db.login_email("email", "password");
-  
+  // Uncomment this line below, if you activate Presence Authorization
+  // https://supabase.com/docs/guides/realtime/authorization#presence
+
+  // realtime.login_email("email", "password");
+
   // You can also use
+
   // db.login_phone("phone", "password");
 
-  int code = db.insert(table, JSON, upsert);
-  Serial.println(code);
-  db.urlQuery_reset();
+  // Parameter 1 : Your ESP Device Name, to track your device in the Supabase Presence
+  realtime.sendPresence("device name");
+  realtime.listen();
 }
 
 void loop()
 {
-  delay(1000);
+  realtime.loop();
 }

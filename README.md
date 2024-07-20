@@ -5,30 +5,27 @@ Simple library to connect ESP32/8266 to Supabase via REST API and WebSockets (fo
 ## Installation
 
 This library is available at Arduino's Library Manager, as well as PlatformIO Library Manager
+
 - [Arduino Library Manager Guide](http://arduino.cc/en/guide/libraries)
 
 ## Examples
 
 See all examples in `examples` folder
 
-## Available Methods
-
-To use Realtime (Postgres Changes), please see the `examples/realtime-postgresChanges` folder. The broadcast and presence features are not implemented yet.
+## Supabase PostgREST API (`#include <ESPSupabase.h>`)
 
 ### Directly Makes Connection to Database
 
-| Method                                           | Description                                                                                                                          |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `login_email(String email_a, String password_a)` | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                                  |
-| `login_phone(String phone_a, String password_a)` | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                                  |
-| `begin(String url_a, String key_a);`             | `url_a`  is a Supabase URL and `key_a` is supabase anon key. Returns `void`                                                          |
-| `login_email(String email_a, String password_a)` | Returns http response code `int`                                                                                                     |
-| `login_phone(String phone_a, String password_a)` | Returns http response code `int`                                                                                                     |
-| `insert(String table, String json, bool upsert)` | Returns http response code `int`. If you want to do upsert, set thirt parameter to `true`                                            |
-| `upload(String bucket, String filename, String mime_type, Stream *stream, uint32_t size)` | `bucket` is the name of the Supabase Storage bucket without any `/`. `filename` is the name to upload the file with, should have extension but no `/`. Takes a `Stream*` pointer as an argument, this can be Arduino SD `File*` or SPIFFS `File*` types. Returns http response code `int`. `mime_type` is for eg. `image/jpg`. `size` is the total size in bytes of the file to upload. Returns http response code `int`. |
-| `upload(String bucket, String filename, String mime_type, uint8_t *buffer, uint32_t size)` | Same function as the previous one but takes a `uint8_t*` buffer instead of a `Stream*`. Can be used for files stored in RAM. |
-| `.doSelect()`                                    | Called at the end of select query chain, see [Examples](#examples). Returns http response payload (your data) from Supabase `String` |
-| `.doUpdate(String json)`                         | Called at the end of update query chain, see [Examples](#examples). Returns http response code from Supabase `int`                   |
+| Method                                                                                     | Description                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `login_email(String email_a, String password_a)`                                           | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                                                                                                                                                                                                                                                                                                                       |
+| `login_phone(String phone_a, String password_a)`                                           | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                                                                                                                                                                                                                                                                                                                       |
+| `begin(String url_a, String key_a);`                                                       | `url_a` is a Supabase URL and `key_a` is supabase anon key. Returns `void`                                                                                                                                                                                                                                                                                                                                                |
+| `insert(String table, String json, bool upsert)`                                           | Returns http response code `int`. If you want to do upsert, set thirt parameter to `true`                                                                                                                                                                                                                                                                                                                                 |
+| `upload(String bucket, String filename, String mime_type, Stream *stream, uint32_t size)`  | `bucket` is the name of the Supabase Storage bucket without any `/`. `filename` is the name to upload the file with, should have extension but no `/`. Takes a `Stream*` pointer as an argument, this can be Arduino SD `File*` or SPIFFS `File*` types. Returns http response code `int`. `mime_type` is for eg. `image/jpg`. `size` is the total size in bytes of the file to upload. Returns http response code `int`. |
+| `upload(String bucket, String filename, String mime_type, uint8_t *buffer, uint32_t size)` | Same function as the previous one but takes a `uint8_t*` buffer instead of a `Stream*`. Can be used for files stored in RAM.                                                                                                                                                                                                                                                                                              |
+| `.doSelect()`                                                                              | Called at the end of select query chain, see [Examples](#examples). Returns http response payload (your data) from Supabase `String`                                                                                                                                                                                                                                                                                      |
+| `.doUpdate(String json)`                                                                   | Called at the end of update query chain, see [Examples](#examples). Returns http response code from Supabase `int`                                                                                                                                                                                                                                                                                                        |
 
 ### Building The Queries
 
@@ -45,7 +42,6 @@ String read = db.from("table").select("*").eq("column", "value").order("column",
 | `.from(String table);`   | Specify which table you want to query. It will append `?table_name` in Request URL      |
 | `.select(String colls);` | Specify that you want to do select query. It will append `&select=colls` in Request URL |
 | `.update(String table);` | Specify that you want to do update query. It will append `&update` in Request URL       |
-
 
 #### Horizontal Filtering (comparison) Operator
 
@@ -90,11 +86,25 @@ This method calls in mandatory, must be called after one opetation (let's say `d
 db.urlQuery_reset();
 ```
 
+## Supabase Realtime API (`#include <ESPSupabaseRealtime.h>`)
+
+To use Realtime (Postgres Changes), please see the `examples/realtime-postgresChanges` and `examples/realtime-presence` folder. The broadcast feature are not implemented yet.
+
+| Method                                                                         | Description                                                                                                         |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `login_email(String email_a, String password_a)`                               | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                 |
+| `login_phone(String phone_a, String password_a)`                               | **(OPTIONAL, ONLY IF USING RLS)**, Returns http response code `int`                                                 |
+| `begin(String hostname, String key, void (*func)(String))`                     | Setup the Realtime connection with Supabase URL and Anon key, also put the handle function for the incoming message |
+| `sendPresence(String device_name)`                                             | Track the presence (online status) of your ESP device (OPTIONAL)                                                    |
+| `addChangesListener(String table, String event, String schema, String filter)` | Listen to Postgres Database changes, you can add multiple of this if you want to track changes form multiple tables |
+| `listen()`                                                                     | Start websocket connection                                                                                          |
+| `loop()`                                                                       | Put this in your loop() function, this will handle the websocket connection and send heartbeats to Supabase         |
+
 ## To-do (sorted by priority)
 
 - [x] Implement Postgres Changes in [Supabase Realtime](https://supabase.com/docs/guides/realtime)
+- [x] Implement Presence in [Supabase Realtime](https://supabase.com/docs/guides/realtime)
 - [ ] Implement Broadcast in [Supabase Realtime](https://supabase.com/docs/guides/realtime)
-- [ ] Implement Presence in [Supabase Realtime](https://supabase.com/docs/guides/realtime)
 
 ## Project Using This Library
 

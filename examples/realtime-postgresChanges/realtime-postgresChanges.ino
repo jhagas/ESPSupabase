@@ -46,10 +46,13 @@ void setup()
   }
   Serial.println("\nConnected!");
 
-  realtime.begin(supabase_url, anon_key, HandleChanges); 
+  realtime.begin(supabase_url, anon_key, HandleChanges);
 
   // Uncomment this line below, if you activate RLS in your Supabase Table
   // realtime.login_email("email", "password");
+  
+  // You can also use
+  // db.login_phone("phone", "password");
 
   // Parameter 1 : Table name
   // Parameter 2 : Event type ("*" | "INSERT" | "UPDATE" | "DELETE")

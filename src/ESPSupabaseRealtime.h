@@ -22,6 +22,7 @@ private:
   String key;
   String hostname;
 
+  // RLS Stuff
   String phone_or_email;
   String password;
   String data;
@@ -33,17 +34,23 @@ private:
   String configAUTH;
 
   // Initial config
-  const char *config = "{\"event\":\"phx_join\",\"topic\":\"realtime:ESP\",\"payload\":{\"config\":{\"postgres_changes\":[]}},\"ref\":\"sentRef\"}";
+  const char *config = R"({"event":"phx_join","topic":"realtime:ESP","payload":{"config":{}},"ref":"ESP"})";
+  // Postgres Changes
+  bool isPostgresChanges = false;
   JsonDocument postgresChanges;
+  // Presence
+  const char *jsonPresence = R"({"topic":"realtime:ESP","event":"presence","payload":{"type":"presence","event":"track","payload":{"user":"","online_at":""}},"ref":"ESP"})";
+  bool isPresence = false;
+  String presenceConfig;
+  // bool isBroadcast = false;  // Not implemented yet
+  // JsonDocument broadcastConfig; // Not implemented yet
   JsonDocument jsonRealtimeConfig;
   String configJSON;
 
   // Heartbeat
   unsigned int last_ms = millis();
-  const char *jsonRealtimeHeartbeat = R"({"event": "heartbeat","topic": "phoenix","payload": {},"ref": "sentRef"})";
-  const char *tokenConfig = R"({"topic": "realtime:ESP","event": "access_token","payload": {
-    "access_token": ""
-  },"ref": "sendRef"})";
+  const char *jsonRealtimeHeartbeat = R"({"event":"heartbeat","topic":"phoenix","payload":{},"ref":"ESP"})";
+  const char *tokenConfig = R"({"topic":"realtime:ESP","event":"access_token","payload":{"access_token":""},"ref":"ESP"})";
 
   void processMessage(uint8_t *payload);
   void webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
@@ -53,6 +60,8 @@ private:
 public:
   SupabaseRealtime() {}
   void begin(String hostname, String key, void (*func)(String));
+  void sendPresence(String device_name);
+  // void broadcast(); // Not implemented yet
   void addChangesListener(String table, String event, String schema, String filter);
   void listen();
   void loop();

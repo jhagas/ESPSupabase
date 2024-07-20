@@ -44,6 +44,7 @@ void setup()
 
   // Uncomment this line below, if you activate RLS in your Supabase Table
   // db.login_email("email", "password");
+  
   // You can also use
   // db.login_phone("phone", "password");
 

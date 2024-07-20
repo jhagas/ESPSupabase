@@ -80,8 +80,10 @@ void setup()
 
   // Uncomment this line below, if you activate RLS in your Supabase Table
   // int loginResponse = db.login_email(email, password);
+
   // You can also use
   // int loginResponse = db.login_phone("phone", "password");
+  
   // if (loginResponse != 200)
   // {
   //   Serial.printf("Login failed with code: %d.\n\r", loginResponse);
