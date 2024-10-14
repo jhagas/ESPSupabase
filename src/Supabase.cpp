@@ -602,7 +602,7 @@ String Supabase::rpc(String func_name, String json_param)
 {
   int httpCode;
 
-  if (!https.begin(client, hostname + "/rpc/" + func_name))
+  if (!https.begin(client, hostname + "/rest/v1/rpc/" + func_name))
   {
     return String(-100);
   }
