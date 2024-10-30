@@ -20,7 +20,10 @@ int Supabase::_login_process()
     https.addHeader("apikey", key);
     https.addHeader("Content-Type", "application/json");
 
-    String query = "{\"" + loginMethod + "\": \"" + phone_or_email + "\", \"password\": \"" + password + "\"}";
+    String escapedPassword = password;
+    escapedPassword.replace("\"", "\\\"");
+
+    String query = "{\"" + loginMethod + "\": \"" + phone_or_email + "\", \"password\": \"" + escapedPassword + "\"}";
     httpCode = https.POST(query);
 
     if (httpCode > 0)
