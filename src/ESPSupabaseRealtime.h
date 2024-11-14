@@ -65,6 +65,7 @@ public:
   void addChangesListener(String table, String event, String schema, String filter);
   void listen();
   void loop();
+  void end(); // A way to end the websocket process (if realtime.loop() is called it will reconnect automatically)
   int login_email(String email_a, String password_a);
   int login_phone(String phone_a, String password_a);
 };
