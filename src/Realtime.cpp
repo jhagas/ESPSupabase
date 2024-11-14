@@ -211,6 +211,11 @@ void SupabaseRealtime::begin(String hostname, String key, void (*func)(String))
   this->handler = func;
 }
 
+void SupabaseRealtime::end()
+{
+  webSocket.disconnect();
+}
+
 int SupabaseRealtime::login_email(String email_a, String password_a)
 {
   useAuth = true;
